@@ -1,0 +1,199 @@
+/* =============================================================================
+   VARS & BASE
+   ============================================================================= */
+.root {
+    -fx-background-color: #F8FAFC; /* Slate 50 - Cleaner background */
+    -fx-font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+}
+
+/* =============================================================================
+   HEADER SECTION
+   ============================================================================= */
+.header-bar {
+    -fx-background-color: #FFFFFF;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 2);
+    -fx-border-color: transparent transparent #E2E8F0 transparent;
+}
+
+.header-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #0F172A; /* Slate 900 */
+}
+
+/* AI Magic Button - Gradient Indigo */
+.ai-button {
+    -fx-background-color: linear-gradient(to right, #6366F1, #8B5CF6);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-background-radius: 6;
+    -fx-padding: 8 20;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(99, 102, 241, 0.25), 5, 0, 0, 3);
+}
+
+.ai-button:hover {
+    -fx-background-color: linear-gradient(to right, #4F46E5, #7C3AED);
+    -fx-translate-y: -1;
+}
+
+/* Add Task Button - Solid Blue */
+.add-button {
+    -fx-background-color: #2563EB;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-background-radius: 6;
+    -fx-padding: 8 16;
+    -fx-cursor: hand;
+}
+
+.add-button:hover {
+    -fx-background-color: #1D4ED8;
+}
+
+/* =============================================================================
+   TABLEVIEW (THE LIST)
+   ============================================================================= */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+}
+
+/* Scrollbar styling */
+.table-view .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+.table-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #CBD5E1;
+    -fx-background-radius: 4;
+}
+
+/* COLUMN HEADERS */
+.table-view .column-header-background {
+    -fx-background-color: transparent;
+    -fx-padding: 0 0 5 0;
+    -fx-border-width: 0 0 2 0;
+    -fx-border-color: transparent transparent #E2E8F0 transparent;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 10 0;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #64748B; /* Slate 500 */
+    -fx-font-weight: 700;
+    -fx-font-size: 11px;
+    -fx-text-transform: uppercase; /* Modern header look */
+    -fx-alignment: CENTER-LEFT;
+    -fx-padding: 0 0 0 15;
+}
+
+/* =============================================================================
+   TABLE ROWS & CELLS
+   ============================================================================= */
+.table-row-cell {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: transparent transparent #F1F5F9 transparent; /* Thin separator */
+    -fx-border-width: 1;
+    -fx-pref-height: 55px; /* Taller rows for modern feel */
+}
+
+/* Striped effect is usually outdated, we stick to white with clean hover */
+.table-row-cell:hover {
+    -fx-background-color: #F8FAFC;
+    -fx-cursor: hand;
+}
+
+/* Selected Row */
+.table-view:focused .table-row-cell:selected,
+.table-row-cell:selected {
+    -fx-background-color: #EFF6FF; /* Blue 50 */
+    -fx-table-cell-border-color: transparent;
+}
+
+/* Cell Text */
+.table-cell {
+    -fx-text-fill: #334155; /* Slate 700 */
+    -fx-font-size: 13px;
+    -fx-alignment: CENTER-LEFT;
+    -fx-padding: 0 0 0 15;
+    -fx-border-width: 0;
+}
+
+.table-view:focused .table-row-cell:selected .table-cell {
+    -fx-text-fill: #1E40AF; /* Dark Blue Text on Selection */
+}
+
+/* =============================================================================
+   ACTION BUTTONS (SUBTASKS & SHARE)
+   ============================================================================= */
+/* Shared base style */
+.action-button {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4;
+    -fx-padding: 4 12;
+    -fx-cursor: hand;
+    -fx-min-width: 70px;
+}
+
+/* Subtasks - Cyan/Blue Pill */
+.subtask-btn {
+    -fx-background-color: rgba(14, 165, 233, 0.1); /* Sky 500 equivalent opacity */
+    -fx-text-fill: #0284C7;
+}
+.subtask-btn:hover {
+    -fx-background-color: rgba(14, 165, 233, 0.2);
+}
+
+/* Share - Purple/Indigo Pill */
+.share-btn {
+    -fx-background-color: rgba(139, 92, 246, 0.1); /* Violet 500 equivalent opacity */
+    -fx-text-fill: #7C3AED;
+}
+.share-btn:hover {
+    -fx-background-color: rgba(139, 92, 246, 0.2);
+}
+
+/* =============================================================================
+   STATUS EDITABLE COMBOBOX
+   ============================================================================= */
+/* Since you use ComboBoxTableCell, we need to style the
+   ComboBox *inside* the cell to look seamless
+*/
+
+.table-cell .combo-box {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+    -fx-alignment: CENTER-LEFT;
+}
+
+/* Text area of combo box */
+.table-cell .combo-box .list-cell {
+    -fx-text-fill: #334155;
+    -fx-font-size: 12px;
+    -fx-padding: 2 5;
+    -fx-background-color: #F1F5F9; /* Slight grey background to indicate editability */
+    -fx-background-radius: 4;
+}
+
+/* The arrow button */
+.table-cell .combo-box .arrow-button {
+    -fx-background-color: transparent;
+}
+.table-cell .combo-box .arrow {
+    -fx-background-color: #94A3B8; /* Muted arrow color */
+    -fx-padding: 3;
+}
+
+/* When hovering the cell, make the combo look more active */
+.table-row-cell:hover .table-cell .combo-box .list-cell {
+    -fx-background-color: #E2E8F0;
+}

@@ -1,0 +1,156 @@
+/* === GLOBAL VARIABLES === */
+.root {
+    -fx-font-family: "Segoe UI", "Inter", sans-serif;
+    -fx-background-color: #0b0c15; /* Deep rich dark */
+
+    /* Palette */
+    -primary: #6366f1;
+    -primary-dim: rgba(99, 102, 241, 0.2);
+    -text-primary: #ffffff;
+    -text-secondary: #94a3b8;
+    -card-bg: #1e293b;
+    -border-color: #334155;
+
+    /* Status Colors */
+    -status-todo-bg: rgba(59, 130, 246, 0.15);
+    -status-todo-text: #60a5fa;
+
+    -status-progress-bg: rgba(245, 158, 11, 0.15);
+    -status-progress-text: #fbbf24;
+
+    -status-done-bg: rgba(16, 185, 129, 0.15);
+    -status-done-text: #34d399;
+}
+
+/* === SIDEBAR === */
+.sidebar {
+    -fx-background-color: #111827;
+    -fx-border-color: transparent -border-color transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.logo-text {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, -primary, 15, 0.2, 0, 0);
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -text-secondary;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 12 15;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.nav-button:hover {
+    -fx-background-color: rgba(255,255,255, 0.05);
+    -fx-text-fill: white;
+}
+
+.nav-button.active {
+    -fx-background-color: -primary;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(99, 102, 241, 0.4), 10, 0, 0, 4);
+}
+
+/* === STAT CARDS === */
+.card {
+    -fx-background-color: linear-gradient(to bottom right, #1e293b, #0f172a);
+    -fx-background-radius: 12;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 4);
+    -fx-border-color: rgba(255,255,255,0.05);
+    -fx-border-radius: 12;
+    -fx-min-width: 200;
+}
+
+/* Color Accents for Cards */
+.card-blue { -fx-border-color: transparent transparent transparent #3b82f6; -fx-border-width: 0 0 0 4; }
+.card-purple { -fx-border-color: transparent transparent transparent #a855f7; -fx-border-width: 0 0 0 4; }
+.card-green { -fx-border-color: transparent transparent transparent #10b981; -fx-border-width: 0 0 0 4; }
+
+.card-title {
+    -fx-text-fill: -text-secondary;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-transform: uppercase;
+}
+
+.card-value {
+    -fx-text-fill: white;
+    -fx-font-size: 32px;
+    -fx-font-weight: 800;
+}
+
+/* === TABLE STYLING === */
+.table-container {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 12;
+    -fx-padding: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 2);
+}
+
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+/* Header */
+.table-view .column-header-background {
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #334155 transparent;
+    -fx-padding: 10 0 10 0;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: -text-secondary;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+}
+
+/* Rows */
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent rgba(255,255,255,0.02) transparent;
+    -fx-padding: 5 0;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: rgba(255,255,255,0.03);
+}
+
+.table-row-cell:selected {
+    -fx-background-color: rgba(99, 102, 241, 0.1); /* Subtle selection */
+}
+
+/* Cells */
+.table-cell {
+    -fx-text-fill: #e2e8f0;
+    -fx-font-size: 14px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 0 0 10;
+}
+
+/* === STATUS BADGES (Generated in Controller) === */
+.status-badge {
+    -fx-background-radius: 15;
+    -fx-padding: 4 12 4 12;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+.status-todo { -fx-background-color: -status-todo-bg; -fx-text-fill: -status-todo-text; }
+.status-progress { -fx-background-color: -status-progress-bg; -fx-text-fill: -status-progress-text; }
+.status-done { -fx-background-color: -status-done-bg; -fx-text-fill: -status-done-text; }
+
+/* Scrollbar */
+.table-view .scroll-bar:vertical .track { -fx-background-color: transparent; }
+.table-view .scroll-bar:vertical .thumb { -fx-background-color: #475569; -fx-background-radius: 5em; }
