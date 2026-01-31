@@ -3,6 +3,8 @@ package com.example.smarttask_frontend.tasks.service;
 import com.example.smarttask_frontend.AppConfig;
 import com.example.smarttask_frontend.category.service.CategoryService;
 import com.example.smarttask_frontend.dto.UpdateDueDateRequest;
+import com.example.smarttask_frontend.tasks.service.NotificationService;
+
 import com.example.smarttask_frontend.entity.CategoryDTO;
 import com.example.smarttask_frontend.entity.Task;
 import com.example.smarttask_frontend.entity.User;
@@ -20,6 +22,8 @@ import java.util.List;
 
 public class TaskService {
     private final CategoryService categoryService = new CategoryService();
+    private final NotificationService notificationService = new NotificationService();
+
 
     private static final String BASE_URL =
             AppConfig.get("backend.base-url").endsWith("/")
@@ -149,21 +153,36 @@ public class TaskService {
         }
     }
 
-    public boolean shareTaskWithUser(Long taskId, Long userId) {
+    public boolean shareTaskWithUser(Long taskId, Long userId, String taskTitle) {
         try {
             String url = BASE_URL + taskId + "/share/" + userId;
+            System.out.println("[TaskService] Sharing task: " + url);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .POST(HttpRequest.BodyPublishers.noBody())
                     .build();
 
-            HttpResponse<Void> response =
-                    httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+            HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
 
-            return response.statusCode() == 200 || response.statusCode() == 204;
+            if (response.statusCode() == 200 || response.statusCode() == 204) {
+                // Create notification for the user being shared with
+                String message = String.format("Task '%s' has been shared with you", taskTitle);
+                boolean notificationCreated = notificationService.createNotification(userId, message);
+                
+                if (notificationCreated) {
+                    System.out.println("[TaskService] Notification created for user " + userId);
+                } else {
+                    System.out.println("[TaskService] Failed to create notification for user " + userId);
+                }
+                
+                return true;
+            }
+
+            return false;
 
         } catch (Exception e) {
+            System.err.println("[TaskService] Error sharing task: " + e.getMessage());
             e.printStackTrace();
             return false;
         }

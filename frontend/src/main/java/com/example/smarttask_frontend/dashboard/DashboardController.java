@@ -4,9 +4,13 @@ import com.example.smarttask_frontend.entity.Task;
 import com.example.smarttask_frontend.entity.User;
 import com.example.smarttask_frontend.tasks.service.TaskService;
 import com.example.smarttask_frontend.session.UserSession;
+import com.example.smarttask_frontend.entity.Notification;
+import com.example.smarttask_frontend.tasks.service.NotificationService;
+import javafx.animation.FadeTransition;
+import javafx.animation.TranslateTransition;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -15,10 +19,13 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.net.URL;
@@ -27,79 +34,291 @@ import java.util.ResourceBundle;
 
 public class DashboardController implements Initializable {
 
-    @FXML
-    private Label dashboardLabel;
-    @FXML
-    private VBox contentArea;
-
-
-    // Linked to the new IDs in FXML for stats
-    @FXML
-    private Label totalTasksLabel;
-    @FXML
-    private Label inProgressLabel;
-    @FXML
-    private Label completedLabel;
-
-    @FXML
-    private TableView<Task> taskTable;
-    @FXML
-    private TableColumn<Task, String> titleColumn;
-    @FXML
-    private TableColumn<Task, String> statusColumn;
-    @FXML
-    private TableColumn<Task, String> priorityColumn;
-    @FXML
-    private TableColumn<Task, String> dueDateColumn;
-    // @FXML
-    // private TableColumn<Task, String> ownerColumn;
-
-    @FXML
-    private TableColumn<Task, String> sharedTitleColumn;
-    @FXML
-    private TableColumn<Task, String> sharedPriorityColumn;
-    @FXML
-    private TableColumn<Task, String> sharedDueDateColumn;
-    @FXML
-    private TableColumn<Task, String> sharedStatusColumn;
-
-    @FXML
-    private TableView<Task> sharedTasksTable;
-
+    @FXML private Label dashboardLabel;
+    @FXML private Label totalTasksLabel;
+    @FXML private Label inProgressLabel;
+    @FXML private Label completedLabel;
+    
+    @FXML private TableView<Task> taskTable;
+    @FXML private TableColumn<Task, String> titleColumn;
+    @FXML private TableColumn<Task, String> statusColumn;
+    @FXML private TableColumn<Task, String> priorityColumn;
+    @FXML private TableColumn<Task, String> dueDateColumn;
+    
+    @FXML private TableView<Task> sharedTasksTable;
+    @FXML private TableColumn<Task, String> sharedTitleColumn;
+    @FXML private TableColumn<Task, String> sharedPriorityColumn;
+    @FXML private TableColumn<Task, String> sharedDueDateColumn;
+    @FXML private TableColumn<Task, String> sharedStatusColumn;
+    
+    // Notification elements
+    @FXML private StackPane notificationContainer;
+    @FXML private Button notificationButton;
+    @FXML private Label notificationBadge;
+    @FXML private VBox notificationPanel;
+    @FXML private StackPane mainContentPane;
+    @FXML private ListView<Notification> notificationListView;
+    
     private final TaskService taskService = new TaskService();
-
+    private final NotificationService notificationService = new NotificationService();
+    private ObservableList<Notification> notifications;
+    
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         setupTableColumns();
         loadDashboardData();
+        setupNotificationPanel();
+        loadNotifications();
     }
+    
+    private void setupNotificationPanel() {
+        // Make notification panel slide from right
+        notificationPanel.setTranslateX(400);
+        
+        // Click handler for notification button
+        notificationButton.setOnAction(event -> toggleNotificationPanel());
+        
 
+        
+        // Prevent panel clicks from closing it - but don't consume ALL events
+        notificationPanel.setOnMouseClicked(event -> {
+            // We don't consume here, let individual controls handle their own clicks
+        });
+    }
+    
+    @FXML
+    private void toggleNotificationPanel() {
+        if (notificationPanel.isVisible()) {
+            closeNotificationPanel();
+        } else {
+            openNotificationPanel();
+        }
+    }
+    
+    private void openNotificationPanel() {
+        // Show overlay and panel
+        notificationPanel.setVisible(true);
+        notificationPanel.setManaged(true);
+        
+        
+        // Slide in notification panel
+        TranslateTransition slideIn = new TranslateTransition(Duration.millis(300), notificationPanel);
+        slideIn.setFromX(400);
+        slideIn.setToX(0);
+        
+        slideIn.play();
+        
+        // Refresh notifications when panel opens
+        if (notificationListView != null) {
+            notificationListView.refresh();
+        }
+    }
+    
+    @FXML
+    private void closeNotificationPanel() {
+        // Slide out notification panel
+        TranslateTransition slideOut = new TranslateTransition(Duration.millis(300), notificationPanel);
+        slideOut.setFromX(0);
+        slideOut.setToX(400);
+        
+
+        
+        slideOut.setOnFinished(e -> {
+            notificationPanel.setVisible(false);
+            notificationPanel.setManaged(false);
+        });
+        
+        slideOut.play();
+    }
+    
+    private void loadNotifications() {
+        try {
+            User user = UserSession.getUser();
+            if (user != null) {
+                List<Notification> notificationList = notificationService.getNotificationsByUser(user.getId());
+                notifications = FXCollections.observableArrayList(notificationList);
+                notificationListView.setItems(notifications);
+                
+                // Update badge count (unread notifications)
+                updateNotificationBadge();
+                
+                // Custom cell factory for notifications with proper event handling
+                notificationListView.setCellFactory(lv -> new ListCell<Notification>() {
+                    private final VBox container = new VBox(5);
+                    private final HBox titleBox = new HBox(10);
+                    private final Label titleLabel = new Label();
+                    private final Label timeLabel = new Label();
+                    private final HBox actionBox = new HBox();
+                    private final Button markAsReadBtn = new Button("Mark as read");
+                    private final StackPane unreadIndicator = createUnreadIndicator();
+                    
+                    {
+                        // Setup styling once
+                        container.setStyle("-fx-padding: 10;");
+                        titleLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: white; -fx-font-size: 14px;");
+                        timeLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px;");
+                        markAsReadBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #6366f1; -fx-font-size: 12px; -fx-padding: 2 5; -fx-cursor: hand;");
+                        
+                        // CRITICAL: Prevent button clicks from propagating
+                        markAsReadBtn.addEventFilter(MouseEvent.MOUSE_CLICKED, MouseEvent::consume);
+                        
+                        titleBox.getChildren().addAll(unreadIndicator, titleLabel);
+                        actionBox.setAlignment(Pos.CENTER_RIGHT);
+                        actionBox.getChildren().add(markAsReadBtn);
+                    }
+                    
+                    @Override
+                    protected void updateItem(Notification notification, boolean empty) {
+                        super.updateItem(notification, empty);
+                        
+                        if (empty || notification == null) {
+                            setText(null);
+                            setGraphic(null);
+                        } else {
+                            titleLabel.setText(notification.getMessage());
+                            timeLabel.setText(notification.getFormattedTime());
+                            
+                            // Clear and rebuild container
+                            container.getChildren().clear();
+                            
+                            if (!notification.isRead()) {
+                                unreadIndicator.setVisible(true);
+                                titleLabel.getStyleClass().add("unread-notification");
+                                container.getChildren().addAll(titleBox, timeLabel, actionBox);
+                                
+                                // Update button action for this specific notification
+                                markAsReadBtn.setOnAction(e -> {
+                                    // Consume the event to prevent propagation
+                                    e.consume();
+                                    markNotificationAsRead(notification);
+                                });
+                            } else {
+                                unreadIndicator.setVisible(false);
+                                titleLabel.getStyleClass().remove("unread-notification");
+                                container.getChildren().addAll(titleLabel, timeLabel);
+                            }
+                            
+                            setGraphic(container);
+                        }
+                    }
+                    
+                    private StackPane createUnreadIndicator() {
+                        StackPane indicator = new StackPane();
+                        indicator.setStyle("-fx-background-color: #6366f1; -fx-min-width: 8; -fx-min-height: 8; -fx-max-width: 8; -fx-max-height: 8; -fx-background-radius: 4;");
+                        return indicator;
+                    }
+                });
+                
+                // Click on notification item (outside the button) to mark as read
+                notificationListView.setOnMouseClicked(event -> {
+                    Notification selected = notificationListView.getSelectionModel().getSelectedItem();
+                    if (selected != null && !selected.isRead()) {
+                        // Check if click was on the button (if so, it will be handled by button's action)
+                        Object source = event.getTarget();
+                        if (!(source instanceof Button)) {
+                            markNotificationAsRead(selected);
+                        }
+                    }
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private void markNotificationAsRead(Notification notification) {
+        User user = UserSession.getUser();
+        if (user != null) {
+            boolean success = notificationService.markAsRead(notification.getId(), user.getId());
+            if (success) {
+                notification.setRead(true);
+                notificationListView.refresh();
+                
+                // Update badge count
+                updateNotificationBadge();
+            }
+        }
+    }
+    
+    @FXML
+    private void markAllAsRead() {
+        User user = UserSession.getUser();
+        if (user != null && notifications != null) {
+            notifications.forEach(notification -> {
+                if (!notification.isRead()) {
+                    boolean success = notificationService.markAsRead(notification.getId(), user.getId());
+                    if (success) {
+                        notification.setRead(true);
+                    }
+                }
+            });
+            notificationListView.refresh();
+            updateNotificationBadge();
+        }
+    }
+    
+    @FXML
+    private void clearAllNotifications() {
+        User user = UserSession.getUser();
+        if (user != null && notifications != null) {
+            // Clear from backend if you have that functionality
+            // notificationService.clearAllNotifications(user.getId());
+            
+            notifications.clear();
+            updateNotificationBadge();
+        }
+    }
+    
+    @FXML
+    private void viewAllNotifications() {
+        // Open a separate window or navigate to full notifications page
+        closeNotificationPanel();
+        // Implement navigation to full notifications view
+        System.out.println("View all notifications clicked");
+    }
+    
+    private void updateNotificationBadge() {
+        if (notifications != null) {
+            long unreadCount = notifications.stream()
+                .filter(n -> !n.isRead())
+                .count();
+            
+            if (unreadCount > 0) {
+                notificationBadge.setText(String.valueOf(unreadCount));
+                notificationBadge.setVisible(true);
+                notificationBadge.setManaged(true);
+            } else {
+                notificationBadge.setVisible(false);
+                notificationBadge.setManaged(false);
+            }
+        } else {
+            notificationBadge.setVisible(false);
+            notificationBadge.setManaged(false);
+        }
+    }
+    
     private void setupTableColumns() {
+        // Existing table column setup...
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
         priorityColumn.setCellValueFactory(new PropertyValueFactory<>("priority"));
         dueDateColumn.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-
+        
         sharedTitleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
         sharedPriorityColumn.setCellValueFactory(new PropertyValueFactory<>("priority"));
         sharedDueDateColumn.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
         sharedStatusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-
-        // === STYLE UPGRADE: Custom Cell Factory for Status Badges ===
+        
         statusColumn.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(String status, boolean empty) {
                 super.updateItem(status, empty);
-
                 if (empty || status == null) {
                     setGraphic(null);
                     setText(null);
                 } else {
-                    // Create a badge label
                     Label badge = new Label(status);
                     badge.getStyleClass().add("status-badge");
-
-                    // Apply CSS class based on status text (Case Insensitive)
                     switch (status.toUpperCase()) {
                         case "COMPLETED":
                         case "DONE":
@@ -113,8 +332,6 @@ public class DashboardController implements Initializable {
                             badge.getStyleClass().add("status-todo");
                             break;
                     }
-
-                    // Wrap in HBox to handle alignment nicely
                     HBox box = new HBox(badge);
                     box.setAlignment(Pos.CENTER_LEFT);
                     setGraphic(box);
@@ -123,53 +340,7 @@ public class DashboardController implements Initializable {
             }
         });
     }
-
-    @FXML
-    private void logout() {
-        try {
-            // 1️⃣ Clear session
-            UserSession.clear();
-            for (Window window : List.copyOf(Window.getWindows())) {
-                window.hide();
-            }
-
-            // 3️⃣ Open Login window
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/LoginView.fxml"));
-            Parent root = loader.load();
-
-            Stage loginStage = new Stage();
-            loginStage.setTitle("Login");
-            loginStage.setScene(new Scene(root));
-            loginStage.show();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    private void showCalendar() {
-        try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/views/CalendarView.fxml")
-            );
-            Parent root = loader.load();
-
-            Stage calendarStage = new Stage();
-            calendarStage.setTitle("Task Calendar");
-            calendarStage.setScene(new Scene(root));
-
-            // Optional but recommended
-            calendarStage.initOwner(dashboardLabel.getScene().getWindow());
-            calendarStage.setResizable(true);
-
-            calendarStage.show();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
+    
     private void loadDashboardData() {
         try {
             User user = UserSession.getUser();
@@ -177,52 +348,95 @@ public class DashboardController implements Initializable {
                 dashboardLabel.setText("Session Expired");
                 return;
             }
-
+            
             dashboardLabel.setText("Overview");
-
-            // Fetch Data
+            
+            // Load tasks
             List<Task> tasks = taskService.getTasksByUser(user.getId());
             ObservableList<Task> observableTasks = FXCollections.observableArrayList(tasks);
             taskTable.setItems(observableTasks);
-
+            
             List<Task> sharedTasks = taskService.getSharedTasks(user.getId());
             sharedTasksTable.setItems(FXCollections.observableArrayList(sharedTasks));
-
-            // Calculate Stats Dynamically
+            
             updateStatistics(tasks);
-
+            
         } catch (Exception e) {
             e.printStackTrace();
-            // Optional: Show alert to user
         }
     }
-
-
+    
     private void updateStatistics(List<Task> tasks) {
         int total = tasks.size();
-        // Assuming status strings match these checks. Adjust to your specific Enum/Strings.
-        long inProgress = tasks.stream().filter(t -> "IN PROGRESS".equalsIgnoreCase(t.getStatus()) || "DOING".equalsIgnoreCase(t.getStatus())).count();
-        long completed = tasks.stream().filter(t -> "COMPLETED".equalsIgnoreCase(t.getStatus()) || "DONE".equalsIgnoreCase(t.getStatus())).count();
-
-        // Update Labels
+        long inProgress = tasks.stream().filter(t -> 
+            "IN PROGRESS".equalsIgnoreCase(t.getStatus()) || 
+            "DOING".equalsIgnoreCase(t.getStatus())).count();
+        long completed = tasks.stream().filter(t -> 
+            "COMPLETED".equalsIgnoreCase(t.getStatus()) || 
+            "DONE".equalsIgnoreCase(t.getStatus())).count();
+        
         totalTasksLabel.setText(String.valueOf(total));
         inProgressLabel.setText(String.valueOf(inProgress));
         completedLabel.setText(String.valueOf(completed));
     }
-
-    public void mytasks() {
+    
+    @FXML
+    private void logout() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/MyTasks.fxml"));
+            UserSession.clear();
+            for (Window window : List.copyOf(Window.getWindows())) {
+                window.hide();
+            }
+            
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/LoginView.fxml"));
             Parent root = loader.load();
-
-            Stage stage = new Stage();
-            stage.setTitle("My Tasks");
-            stage.setScene(new Scene(root));
-            stage.show();
-
+            Stage loginStage = new Stage();
+            loginStage.setTitle("Login");
+            loginStage.setScene(new Scene(root));
+            loginStage.show();
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
+    
+    @FXML
+    private void showCalendar() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/views/CalendarView.fxml")
+            );
+            Parent root = loader.load();
+            Stage calendarStage = new Stage();
+            calendarStage.setTitle("Task Calendar");
+            calendarStage.setScene(new Scene(root));
+            calendarStage.initOwner(dashboardLabel.getScene().getWindow());
+            calendarStage.setResizable(true);
+            calendarStage.show();
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void mytasks() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/MyTasks.fxml"));
+            Parent root = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("My Tasks");
+            stage.setScene(new Scene(root));
+            stage.show();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    // Handle panel click to prevent closing
+    @FXML
+    private void handlePanelClick(MouseEvent event) {
+        // Consume the event to prevent it from reaching the overlay
+        event.consume();
+    }
 }

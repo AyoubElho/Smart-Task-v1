@@ -154,3 +154,131 @@
 /* Scrollbar */
 .table-view .scroll-bar:vertical .track { -fx-background-color: transparent; }
 .table-view .scroll-bar:vertical .thumb { -fx-background-color: #475569; -fx-background-radius: 5em; }
+/* Top Bar */
+.top-bar {
+    -fx-background-color: #1e293b;
+    -fx-border-color: #334155;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* Notification Button */
+.notification-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 20;
+    -fx-padding: 5;
+    -fx-cursor: hand;
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-max-width: 40px;
+    -fx-max-height: 40px;
+}
+.bell-icon {
+    -fx-shape: "M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z";
+    -fx-background-color: white;
+    -fx-min-width: 20px;
+    -fx-min-height: 20px;
+    -fx-max-width: 20px;
+    -fx-max-height: 20px;
+}
+.notification-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+.notification-container {
+    -fx-alignment: center;
+}
+
+.notification-badge {
+    -fx-background-color: #ef4444;
+    -fx-text-fill: white;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 1 4;
+    -fx-background-radius: 10;
+    -fx-alignment: center;
+    -fx-translate-x: 10;
+    -fx-translate-y: -10;
+}
+
+/* Notification Panel */
+.notification-panel {
+    -fx-background-color: #1e293b;
+    -fx-border-color: #334155;
+    -fx-border-width: 0 0 0 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0, 0, 0);
+    -fx-pref-width: 350;
+    -fx-max-width: 350;
+    -fx-min-height: 600;
+}
+
+.notification-panel-title {
+    -fx-text-fill: white;
+}
+
+.notification-action-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 12px;
+    -fx-padding: 2 5;
+    -fx-cursor: hand;
+}
+
+.notification-action-button:hover {
+    -fx-text-fill: white;
+}
+
+.notification-separator {
+    -fx-background-color: #334155;
+    -fx-padding: 5 0;
+}
+
+.notification-list {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.notification-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 10 0;
+    -fx-border-color: #334155;
+    -fx-border-width: 0 0 1 0;
+}
+
+.notification-list .list-cell:filled:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+}
+
+.unread-notification {
+    -fx-text-fill: white !important;
+    -fx-font-weight: bold;
+}
+
+/* Overlay */
+.overlay-pane {
+    -fx-background-color: rgba(0, 0, 0, 0.123);
+}
+
+.notification-view-all-button {
+    -fx-background-color: #6366f1;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 8 20;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.notification-view-all-button:hover {
+    -fx-background-color: #4f46e5;
+}
+
+/* User Menu Button */
+.user-menu-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 20;
+    -fx-padding: 8;
+    -fx-cursor: hand;
+}
+
+.user-menu-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}

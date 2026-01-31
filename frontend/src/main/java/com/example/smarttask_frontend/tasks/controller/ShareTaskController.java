@@ -4,6 +4,7 @@ import com.example.smarttask_frontend.auth.service.UserService;
 import com.example.smarttask_frontend.tasks.service.TaskService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import com.example.smarttask_frontend.tasks.service.NotificationService;
 import com.example.smarttask_frontend.session.UserSession;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -26,14 +27,20 @@ public class ShareTaskController {
     private TableColumn<User, Void> actionColumn;
 
     private Long taskId;
+    private String taskTitle;
+
 
     private final UserService userService = new UserService();
     private final TaskService taskService = new TaskService();
+    private final NotificationService notificationService = new NotificationService();
+
 
     private final ObservableList<User> users = FXCollections.observableArrayList();
 
     public void setTaskId(Long taskId, String taskTitle) {
         this.taskId = taskId;
+        this.taskTitle = taskTitle;
+
         taskTitleLabel.setText("Task: " + taskTitle);
 
         setupUserTable();
@@ -54,14 +61,14 @@ public class ShareTaskController {
         usernameColumn.setCellValueFactory(data -> 
             new javafx.beans.property.SimpleStringProperty(data.getValue().getUsername())
         );
-
+        
         actionColumn.setCellFactory(col -> new TableCell<>() {
             private final Button shareButton = new Button("Share");
         
             {
                 shareButton.setOnAction(event -> {
                     User selectedUser = getTableView().getItems().get(getIndex());
-                    boolean success = taskService.shareTaskWithUser(taskId, selectedUser.getId());
+                    boolean success = taskService.shareTaskWithUser(taskId, selectedUser.getId(), taskTitle);
                     if (success) {
                         showInfo("Task shared with " + selectedUser.getUsername());
                     } else {
